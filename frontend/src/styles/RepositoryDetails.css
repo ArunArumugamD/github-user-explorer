@@ -1,0 +1,91 @@
+/* src/styles/RepositoryDetails.css */
+.repository-details {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.details-subtitle {
+  color: #666;
+  font-size: 14px;
+  font-weight: normal;
+  margin: 24px 0 8px;
+}
+
+.details-title {
+  font-size: 32px;
+  margin: 0 0 24px;
+  color: #24292e;
+}
+
+.setup-plan-button {
+  padding: 5px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background-color: #2ea44f;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+
+.setup-plan-button:hover {
+  background-color: #2c974b;
+}
+
+.verification-section {
+  padding: 16px;
+  background-color: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  margin-bottom: 24px;
+}
+
+.verified-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #22863a;
+  font-weight: 500;
+}
+
+.verified-badge {
+  font-size: 16px;
+}
+
+.verification-text {
+  margin: 8px 0 0;
+  color: #586069;
+  font-size: 14px;
+}
+
+.categories-section {
+  margin: 24px 0;
+}
+
+.categories-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.category-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.category-tag {
+  padding: 4px 12px;
+  background-color: #f1f8ff;
+  color: #0366d6;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.repository-description {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #24292e;
+}

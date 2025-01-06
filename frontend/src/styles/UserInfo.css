@@ -1,0 +1,56 @@
+/* src/styles/UserInfo.css */
+.user-info {
+    padding: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e1e4e8;
+  }
+  
+  .user-header {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  
+  .user-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+  }
+  
+  .user-details {
+    flex: 1;
+  }
+  
+  .user-name {
+    margin: 0 0 8px 0;
+    font-size: 26px;
+    line-height: 1.25;
+    color: #24292e;
+  }
+  
+  .user-bio {
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #24292e;
+  }
+  
+  .user-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: #586069;
+  }
+  
+  .followers-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #0366d6;
+    font-size: inherit;
+    cursor: pointer;
+  }
+  
+  .followers-button:hover {
+    text-decoration: underline;
+  }

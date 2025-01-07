@@ -1,6 +1,6 @@
 # GitHub User Explorer
 
-A full-stack application built with Node.js, Express, TypeScript, MySQL, and React that allows users to explore GitHub profiles, repositories, and connections.
+A full-stack application built with Node.js, Express, TypeScript, PostgreSQL, and React that allows users to explore GitHub profiles, repositories, and connections.
 
 ## Features
 
@@ -17,7 +17,7 @@ A full-stack application built with Node.js, Express, TypeScript, MySQL, and Rea
 - Node.js
 - Express.js
 - TypeScript
-- MySQL
+- PostgreSQL
 - TypeORM
 
 ### Frontend
@@ -28,7 +28,7 @@ A full-stack application built with Node.js, Express, TypeScript, MySQL, and Rea
 ## Prerequisites
 
 - Node.js (v14 or higher)
-- MySQL
+- PostgreSQL
 - Git
 
 ## Installation & Setup
@@ -47,7 +47,7 @@ cd backend
 # Install dependencies
 npm install
 
-# Create .env file and fill in your MySQL credentials
+# Create .env file and fill in your PostgreSQL credentials
 # Example .env content:
 DB_HOST=localhost
 DB_PORT=3306
@@ -85,7 +85,7 @@ npm start
 
 ## Running the Application
 
-1. Make sure MySQL server is running
+1. Make sure PostgreSQL server is running
 
 2. Start backend server:
 ```bash
@@ -112,7 +112,7 @@ npm start
 
 ## Database Schema
 
-The application uses MySQL with the following main table:
+The application uses PostgreSQL with the following main table:
 
 ```sql
 CREATE TABLE users (
@@ -129,8 +129,8 @@ CREATE TABLE users (
   following_users TEXT,
   follower_users TEXT,
   friend_users TEXT,
-  created_at DATETIME,
-  updated_at DATETIME,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
   is_deleted BOOLEAN DEFAULT false
 );
 ```
@@ -139,4 +139,4 @@ CREATE TABLE users (
 
 - The application uses GitHub's API, so the GitHub token is required for proper functionality
 - The backend runs on port 3001 and frontend on port 3000
-- Make sure both MySQL and Node.js are installed and running before starting the application
+- Make sure both PostgreSQL and Node.js are installed and running before starting the application

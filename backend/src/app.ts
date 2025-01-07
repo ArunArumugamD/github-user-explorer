@@ -1,4 +1,3 @@
-// src/app.ts
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
@@ -7,55 +6,56 @@ import { User } from './models/User';
 import * as dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
 
-// Load environment variables
 dotenv.config();
 
-// Create Express app
 const app = express();
+
+// Configure CORS for production
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+        ? 'https://github-user-explorer-8wcu.onrender.com'  // Your frontend URL
+        : 'http://localhost:3000'
+}));
 
 // Create TypeORM connection
 export const AppDataSource = new DataSource({
-    type: "mysql",
-    host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT || "3306"),
-    username: process.env.DB_USERNAME || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "github_explorer",
+    type: "postgres",  // Changed to postgres
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || "5432"),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     synchronize: true,
-    logging: true,  // Set to true for debugging
+    ssl: process.env.NODE_ENV === 'production',
+    extra: {
+        ssl: process.env.NODE_ENV === 'production' 
+            ? { rejectUnauthorized: false }
+            : null
+    },
     entities: [User],
     migrations: [],
-    subscribers: [],
+    subscribers: []
 });
 
-// Middleware
-app.use(cors());
 app.use(express.json());
-
-// Routes
 app.use('/api/users', userRoutes);
 
-// Error handling
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Error:', err);
-    res.status(500).json({
-        status: 'error',
-        message: 'Internal server error'
-    });
+// Health check endpoint
+app.get('/', (req, res) => {
+    res.json({ status: 'ok' });
 });
 
 const PORT = process.env.PORT || 3001;
 
-// Initialize database connection and start server
 AppDataSource.initialize()
     .then(() => {
-        console.log('Database connection established');
+        console.log('Database connected');
         app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
+            console.log(`Server running on port ${PORT}`);
         });
     })
     .catch((error) => {
-        console.error('Error connecting to database:', error);
+        console.error('Database connection failed:', error);
         process.exit(1);
     });
 

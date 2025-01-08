@@ -26,6 +26,19 @@ export const AppDataSource = new DataSource({
     subscribers: [],
 });
 
+// Add this before other routes
+app.get('/', (req, res) => {
+    res.json({
+        status: 'success',
+        message: 'GitHub Explorer API is running',
+        endpoints: {
+            users: '/api/users/:username',
+            followers: '/api/users/:username/friends',
+            search: '/api/users/search?query=:query'
+        }
+    });
+});
+
 // Enable CORS with specific options
 app.use(cors({
     origin: '*', // For development. In production, specify your frontend URL

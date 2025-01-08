@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
 
 // Enable CORS with specific options
 app.use(cors({
-    origin: '*', // For development. In production, specify your frontend URL
+    origin: 'https://github-user-frontend.onrender.com', // For development. In production, specify your frontend URL
     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

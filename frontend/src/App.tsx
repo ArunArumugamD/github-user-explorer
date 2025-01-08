@@ -31,13 +31,20 @@ function App() {
     setError('');
 
     try {
+      console.log('Fetching user data...');
       const userData = await githubService.getUser(username);
+      console.log('User data:', userData);
+
+      console.log('Fetching repositories...');
       const repos = await githubService.getUserRepositories(username);
+      console.log('Repositories:', repos);
+
       setUser(userData);
       setRepositories(repos);
       setCurrentView('repositories');
     } catch (err) {
-      setError('Error fetching data');
+      console.error('Error:', err);
+      setError('Error fetching data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,21 +59,14 @@ function App() {
     if (!user) return;
     setLoading(true);
     try {
-      console.log('Fetching followers for:' , user.login);
-      const followersList = await githubService.getUserFollowers(user.login);
+      const followersList = await githubService.getUserFollowers(user.username);
       setFollowers(followersList);
       setCurrentView('followers');
     } catch (err) {
-      console.error('Error fetching followers:' , err);
       setError('Error fetching followers');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFollowerClick = (followerUsername: string) => {
-    setUsername(followerUsername);
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
 
   return (
@@ -85,7 +85,7 @@ function App() {
               disabled={loading}
             />
             <button type="submit" className="search-button" disabled={loading}>
-              Search
+              {loading ? 'Searching...' : 'Search'}
             </button>
           </form>
           {error && <div className="error-message">{error}</div>}
@@ -121,7 +121,10 @@ function App() {
       {currentView === 'followers' && (
         <FollowersList
           followers={followers}
-          onFollowerClick={handleFollowerClick}
+          onFollowerClick={(followerUsername) => {
+            setUsername(followerUsername);
+            handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+          }}
           onBack={() => setCurrentView('repositories')}
         />
       )}

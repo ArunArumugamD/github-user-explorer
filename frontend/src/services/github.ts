@@ -1,85 +1,44 @@
 // src/services/github.ts
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { User, Repository } from '../types';
 
 const GITHUB_API = 'https://api.github.com';
 
-interface GitHubErrorResponse {
-  message: string;
-  documentation_url?: string;
-}
-
-const getHeaders = () => {
-    const token = process.env.REACT_APP_GITHUB_TOKEN;
-    if (!token) {
-        console.warn('GitHub token not found in environment variables');
-    }
-    
-    return {
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Accept': 'application/vnd.github.v3+json'
-    };
-};
-
-const handleAxiosError = (error: unknown) => {
-    if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<GitHubErrorResponse>;
-        if (axiosError.response?.status === 403) {
-            throw new Error('GitHub API rate limit exceeded. Please try again later.');
-        } else if (axiosError.response?.status === 404) {
-            throw new Error('User not found');
-        }
-        throw new Error(axiosError.response?.data?.message || 'Error accessing GitHub API');
-    }
-    throw new Error('An unexpected error occurred');
+const headers = {
+    'Accept': 'application/vnd.github.v3+json'
 };
 
 export const githubService = {
     async getUser(username: string): Promise<User> {
         try {
-            const response = await axios.get(`${GITHUB_API}/users/${username}`, { 
-                headers: getHeaders() 
-            });
+            // First try our backend
+            const backendUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/users/${username}`;
+            const response = await axios.post(backendUrl);
             return response.data;
         } catch (error) {
-            throw handleAxiosError(error);
+            console.error('Failed to fetch user:', error);
+            throw new Error('Error fetching user data');
         }
     },
 
     async getUserRepositories(username: string): Promise<Repository[]> {
         try {
-            const response = await axios.get(`${GITHUB_API}/users/${username}/repos`, { 
-                headers: getHeaders() 
-            });
+            const response = await axios.get(`${GITHUB_API}/users/${username}/repos`, { headers });
             return response.data;
         } catch (error) {
-            throw handleAxiosError(error);
+            console.error('Failed to fetch repositories:', error);
+            throw new Error('Error fetching repositories');
         }
     },
 
     async getUserFollowers(username: string): Promise<User[]> {
         try {
-            const response = await axios.get(`${GITHUB_API}/users/${username}/followers`, { 
-                headers: getHeaders() 
-            });
-            
-            const followersWithDetails = await Promise.all(
-                response.data.map(async (follower: any) => {
-                    try {
-                        const userResponse = await axios.get(
-                            `${GITHUB_API}/users/${follower.login}`,
-                            { headers: getHeaders() }
-                        );
-                        return userResponse.data;
-                    } catch (error) {
-                        console.error(`Error fetching details for follower ${follower.login}:`, error);
-                        return follower; // Return basic follower info if detailed fetch fails
-                    }
-                })
-            );
-            return followersWithDetails;
+            const backendUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/users/${username}/friends`;
+            const response = await axios.get(backendUrl);
+            return response.data.friends;
         } catch (error) {
-            throw handleAxiosError(error);
+            console.error('Failed to fetch followers:', error);
+            throw new Error('Error fetching followers');
         }
     }
 };

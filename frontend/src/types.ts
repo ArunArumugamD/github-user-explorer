@@ -1,6 +1,6 @@
 // src/types.ts
 export interface User {
-    login: string;
+    username: string;
     name: string | null;
     avatar_url: string;
     bio: string | null;
@@ -9,6 +9,7 @@ export interface User {
     public_repos: number;
     followers: number;
     following: number;
+    friend_users?: string[];
   }
   
   export interface Repository {

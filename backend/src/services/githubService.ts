@@ -1,16 +1,32 @@
 // src/services/githubService.ts
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { User } from '../models/User';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+interface GitHubErrorResponse {
+    message: string;
+    documentation_url?: string;
+}
+
 export class GitHubService {
     private readonly baseUrl = 'https://api.github.com';
     private readonly headers = {
-        'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
         'Accept': 'application/vnd.github.v3+json'
     };
+
+    private handleError(error: unknown, context: string): never {  // Changed return type to never
+        if (axios.isAxiosError(error)) {
+            const axiosError = error as AxiosError<GitHubErrorResponse>;
+            if (axiosError.response?.status === 403) {
+                throw new Error('GitHub API rate limit exceeded. Please try again later.');
+            }
+            throw new Error(`${context}: ${axiosError.response?.data?.message || axiosError.message}`);
+        }
+        throw error;
+    }
 
     async fetchUserData(username: string): Promise<any> {
         try {
@@ -18,8 +34,8 @@ export class GitHubService {
                 headers: this.headers
             });
             return response.data;
-        } catch (error: any) {
-            throw new Error(`Failed to fetch user data from GitHub: ${error.response?.data?.message || error.message}`);
+        } catch (error) {
+            return this.handleError(error, 'Failed to fetch user data from GitHub');
         }
     }
 
@@ -29,8 +45,8 @@ export class GitHubService {
                 headers: this.headers
             });
             return response.data.map((follower: any) => follower.login);
-        } catch (error: any) {
-            throw new Error(`Failed to fetch followers: ${error.response?.data?.message || error.message}`);
+        } catch (error) {
+            return this.handleError(error, 'Failed to fetch followers');
         }
     }
 
@@ -40,37 +56,47 @@ export class GitHubService {
                 headers: this.headers
             });
             return response.data.map((following: any) => following.login);
-        } catch (error: any) {
-            throw new Error(`Failed to fetch following: ${error.response?.data?.message || error.message}`);
+        } catch (error) {
+            return this.handleError(error, 'Failed to fetch following');
         }
     }
 
     async saveUser(githubData: any): Promise<User> {
         try {
+            console.log('Saving user data:', githubData.login);
             let user = await User.findOne({ where: { username: githubData.login } });
             
             if (!user) {
                 user = new User();
+                console.log('Creating new user');
+            } else {
+                console.log('Updating existing user');
             }
 
-            user.username = githubData.login;
-            user.name = githubData.name;
-            user.avatar_url = githubData.avatar_url;
-            user.bio = githubData.bio;
-            user.location = githubData.location;
-            user.blog = githubData.blog;
-            user.public_repos = githubData.public_repos;
-            user.public_gists = githubData.public_gists;
-            user.followers = githubData.followers;
-            user.following = githubData.following;
+            Object.assign(user, {
+                username: githubData.login,
+                name: githubData.name,
+                avatar_url: githubData.avatar_url,
+                bio: githubData.bio,
+                location: githubData.location,
+                blog: githubData.blog,
+                public_repos: githubData.public_repos,
+                public_gists: githubData.public_gists,
+                followers: githubData.followers,
+                following: githubData.following
+            });
 
             const followers = await this.fetchUserFollowers(githubData.login);
             const following = await this.fetchUserFollowing(githubData.login);
             user.friend_users = followers.filter(f => following.includes(f));
 
-            return await user.save();
-        } catch (error: any) {
-            throw new Error(`Failed to save user: ${error.message}`);
+            console.log('Saving user to database...');
+            const savedUser = await user.save();
+            console.log('User saved successfully');
+            
+            return savedUser;
+        } catch (error) {
+            return this.handleError(error, 'Failed to save user');
         }
     }
 }

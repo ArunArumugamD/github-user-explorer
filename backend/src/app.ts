@@ -1,3 +1,4 @@
+// src/app.ts
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
@@ -6,56 +7,72 @@ import { User } from './models/User';
 import * as dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
 
+// Load environment variables
 dotenv.config();
 
+// Create Express app
 const app = express();
-
-// Configure CORS for production
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? 'https://github-user-explorer-8wcu.onrender.com'  // Your frontend URL
-        : 'http://localhost:3000'
-}));
 
 // Create TypeORM connection
 export const AppDataSource = new DataSource({
-    type: "postgres",  // Changed to postgres
+    type: "postgres", // Changed to postgres
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || "5432"),
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: true,
-    ssl: process.env.NODE_ENV === 'production',
+    ssl: process.env.NODE_ENV === 'production' ? true : false,
     extra: {
-        ssl: process.env.NODE_ENV === 'production' 
-            ? { rejectUnauthorized: false }
-            : null
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : null
     },
+    synchronize: true,
+    logging: true,  // Set to true for debugging
     entities: [User],
     migrations: [],
-    subscribers: []
+    subscribers: [],
 });
 
+// CORS configuration
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+        ? 'https://github-user-frontend.onrender.com'
+        : 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true
+}));
+
 app.use(express.json());
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Backend is working!' });
+});
+
+// Routes
 app.use('/api/users', userRoutes);
 
-// Health check endpoint
-app.get('/', (req, res) => {
-    res.json({ status: 'ok' });
+// Error handling
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Error:', err);
+    res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+    });
 });
 
 const PORT = process.env.PORT || 3001;
 
+// Initialize database connection and start server
 AppDataSource.initialize()
     .then(() => {
-        console.log('Database connected');
+        console.log('Database connection established');
         app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+            console.log(`Server is running on port ${PORT}`);
+            console.log(`Environment: ${process.env.NODE_ENV}`);
         });
     })
     .catch((error) => {
-        console.error('Database connection failed:', error);
+        console.error('Error connecting to database:', error);
         process.exit(1);
     });
 
